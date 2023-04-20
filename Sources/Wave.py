@@ -432,7 +432,7 @@ class FramedAudio:
             spec_db, 
             origin='lower', 
             aspect='auto', 
-            cmap='plasma', 
+            cmap='viridis', 
             extent=[0, self.get_frame_time(self.get_num_frames() - 1), freq[0], freq[-1]]
             )
         ax.set_xlabel(xlabel)
