@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.io.wavfile as wavfile
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
+import matplotlib.pyplot as plt
 
 class WavFile:
     """
@@ -18,7 +19,7 @@ class WavFile:
     """
 
     ## add an init that initizal from a wave date and sample rate
-    def __init__(self, audio_data: np.ndarray, sample_rate: int) -> None:
+    def __init__(self, audio_data: np.ndarray, sample_rate: int):
         """
         Initialize the WavFile object.
 
@@ -127,13 +128,16 @@ class WavFile:
             raise ValueError("The noise signal must have the same length as the audio data.")
         self.audio_data += noise.audio_data 
 
-    # add a funtion to plot the Wave, with x axis in seconds
+
     def plot(self, 
-             start_time: float = 0.0, 
-             end_time: float = None, 
-             title: str = None, 
-             xlabel: str = "t/s", 
-             ylabel: str = None) -> None:
+            start_time: float = 0.0, 
+            end_time: Optional[float] = None, 
+            title: Optional[str] = None, 
+            xlabel: Optional[str] = "t/s", 
+            ylabel: Optional[str] = "magnitude",
+            fig: Optional[plt.Figure] = None,
+            ax: plt.Axes = None
+            ) -> None:
         """
         Plots the audio data.
 
@@ -144,20 +148,24 @@ class WavFile:
         - xlabel (str): the label of the x-axis.
         - ylabel (str): the label of the y-axis.
         """
-        import matplotlib.pyplot as plt
+
         start_index = int(start_time * self.sample_rate)
         if end_time is None:
             end_index = len(self.audio_data)
         else:
             end_index = int(end_time * self.sample_rate)
-        plt.plot(np.arange(start_index, end_index) / self.sample_rate, self.audio_data[start_index:end_index])
+            
+        # if fig is None:
+        #     fig = plt.figure()
+        # ax = fig.add_subplot(111)
+        
+        ax.plot(np.arange(start_index, end_index) / self.sample_rate, self.audio_data[start_index:end_index])
         if title is not None:
-            plt.title(title)
+            ax.set_title(title)
         if xlabel is not None:
-            plt.xlabel(xlabel)
+            ax.set_xlabel(xlabel)
         if ylabel is not None:
-            plt.ylabel(ylabel)
-        plt.show()
+            ax.set_ylabel(ylabel)
 
 
 # funciton that add two wave files together and return a new wave file
@@ -179,6 +187,7 @@ def add_waves(wave1: WavFile, wave2: WavFile) -> WavFile:
     return WavFile(wave1.audio_data + wave2.audio_data, wave1.sample_rate)
 
 class FramedAudio:
+
     """
     A class representing a framed audio signal.
 
@@ -276,9 +285,12 @@ class FramedAudio:
     def plot_spectrogram(self, 
                          start_time: float = 0.0, 
                          end_time: float = None, 
-                         title: str = None, 
+                         title: str = "Spectrogram", 
                          xlabel: str = "t/s", 
-                         ylabel: str = "f/Hz") -> None:
+                         ylabel: str = "f/Hz",
+                         fig: Optional[plt.Figure] = None,
+                         ax: plt.Axes = None
+                         ) -> None:
         """
         Plots the spectrogram of the framed audio.
 
@@ -301,12 +313,23 @@ class FramedAudio:
 
         # Convert the spectrogram to dB
         spec_db = 20 * np.log10(spec)
+
+        # if fig is None:
+        #     fig = plt.figure()
+        # ax = fig.add_subplot(111)
         
+
         # Plot the spectrogram
-        plt.imshow(spec_db, origin='lower', aspect='auto', cmap='plasma', extent=[0, self.get_frame_time(self.get_num_frames() - 1), freq[0], freq[-1]])
-        plt.xlabel('Time (s)')
-        plt.ylabel('Frequency (Hz)')
-        # add and describe for the colorbar
-        cbar = plt.colorbar() 
-        cbar.set_label('Magnitude (dB)')
-        plt.show()
+        im = ax.imshow(
+            spec_db, 
+            origin='lower', 
+            aspect='auto', 
+            cmap='plasma', 
+            extent=[0, self.get_frame_time(self.get_num_frames() - 1), freq[0], freq[-1]]
+            )
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        ax.set_title(title)
+        # Set a color bar for the first axis
+        cbar = fig.colorbar(im, ax=ax)
+        cbar.set_label('M(dB)')
