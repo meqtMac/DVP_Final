@@ -45,6 +45,10 @@ def filt(noisedSource: np.ndarray, noise: np.ndarray, filterGenerator: Callable[
     return np.fft.ifft(X)
 
 
+def placeholder_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
+    gain = np.ones(gamma.shape)
+    return gain
+
 # Spectral Subtraction
 def spec_sub_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
     gain = np.sqrt( ksi / (1+ ksi) ) # gain function

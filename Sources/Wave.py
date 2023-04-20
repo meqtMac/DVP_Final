@@ -170,6 +170,7 @@ class WavFile:
 
 # funciton that add two wave files together and return a new wave file
 def add_waves(wave1: WavFile, wave2: WavFile) -> WavFile:
+
     """
     Adds two WavFile objects together.
 
@@ -185,6 +186,113 @@ def add_waves(wave1: WavFile, wave2: WavFile) -> WavFile:
     if len(wave1.audio_data) != len(wave2.audio_data):
         raise ValueError("The two WavFile objects must have the same length.")
     return WavFile(wave1.audio_data + wave2.audio_data, wave1.sample_rate)
+
+# write a function that two wave file as input, one as signal+noise, and anther as noise, return snr
+def snr(noisy: WavFile, signal: WavFile) -> float:
+    """
+    Calculates the signal-to-noise ratio (SNR) of a signal.
+
+    Args:
+    - signal (WavFile): a WavFile object containing the signal.
+    - noise (WavFile): a WavFile object containing the noise.
+
+    Returns:
+    - float: the signal-to-noise ratio of the signal.
+    """
+    if noisy.sample_rate != signal.sample_rate:
+        raise ValueError("The two WavFile objects must have the same sample rate.")
+    # if len(noisy.audio_data) != len(signal.audio_data):
+    #     raise ValueError("The two WavFile objects must have the same length.")
+
+    # cut noisy to the same length as signal
+    noisy.audio_data = noisy.audio_data[:len(signal.audio_data)]
+    signal_power = np.sum(noisy.audio_data ** 2) / len(noisy.audio_data)
+    noise_power = signal_power - np.sum(signal.audio_data ** 2) / len(signal.audio_data)
+    return 10 * np.log10(signal_power / noise_power)
+
+# write a function that take wave file, one noise and one signal, return the mse
+def mse(noisy: WavFile, signal: WavFile) -> float:
+    """
+    Calculates the mean squared error (MSE) of a signal.
+
+    Args:
+    - signal (WavFile): a WavFile object containing the signal.
+    - noise (WavFile): a WavFile object containing the noise.
+
+    Returns:
+    - float: the mean squared error of the signal.
+    """
+    if noisy.sample_rate != signal.sample_rate:
+        raise ValueError("The two WavFile objects must have the same sample rate.")
+    # if len(noisy.audio_data) != len(signal.audio_data):
+    #     raise ValueError("The two WavFile objects must have the same length.")
+
+    # cut noisy to the same length as signal
+    noisy.audio_data = noisy.audio_data[:len(signal.audio_data)]
+    return np.mean((noisy.audio_data - signal.audio_data) ** 2)
+
+# write a function that take wave file, one noise and one signal, return the mean square log error
+def msle(noisy: WavFile, signal: WavFile) -> float:
+    """
+    Calculates the mean squared log error (MSLE) of a signal.
+
+    Args:
+    - signal (WavFile): a WavFile object containing the signal.
+    - noise (WavFile): a WavFile object containing the noise.
+
+    Returns:
+    - float: the mean squared log error of the signal.
+    """
+    if noisy.sample_rate != signal.sample_rate:
+        raise ValueError("The two WavFile objects must have the same sample rate.")
+    # if len(noisy.audio_data) != len(signal.audio_data):
+    #     raise ValueError("The two WavFile objects must have the same length.")
+
+    # cut noisy to the same length as signal
+    noisy.audio_data = noisy.audio_data[:len(signal.audio_data)]
+    return np.mean((np.log(noisy.audio_data ** 2 + 1e-12 ) - np.log(signal.audio_data ** 2 + 1e-12)) ** 2)
+
+# write a function that take wave file, one noise and one signal, return the mean absolute error
+def mae(noisy: WavFile, signal: WavFile) -> float:
+    """
+    Calculates the mean absolute error (MAE) of a signal.
+
+    Args:
+    - signal (WavFile): a WavFile object containing the signal.
+    - noise (WavFile): a WavFile object containing the noise.
+
+    Returns:
+    - float: the mean absolute error of the signal.
+    """
+    if noisy.sample_rate != signal.sample_rate:
+        raise ValueError("The two WavFile objects must have the same sample rate.")
+    # if len(noisy.audio_data) != len(signal.audio_data):
+    #     raise ValueError("The two WavFile objects must have the same length.")
+
+    # cut noisy to the same length as signal
+    noisy.audio_data = noisy.audio_data[:len(signal.audio_data)]
+    return np.mean(np.abs(noisy.audio_data - signal.audio_data))
+
+#  write a function that take wave file, one noise and one signal, return the mape
+def mape(noisy: WavFile, signal: WavFile) -> float:
+    """
+    Calculates the mean absolute percentage error (MAPE) of a signal.
+
+    Args:
+    - signal (WavFile): a WavFile object containing the signal.
+    - noise (WavFile): a WavFile object containing the noise.
+
+    Returns:
+    - float: the mean absolute percentage error of the signal.
+    """
+    if noisy.sample_rate != signal.sample_rate:
+        raise ValueError("The two WavFile objects must have the same sample rate.")
+    # if len(noisy.audio_data) != len(signal.audio_data):
+    #     raise ValueError("The two WavFile objects must have the same length.")
+
+    # cut noisy to the same length as signal
+    noisy.audio_data = noisy.audio_data[:len(signal.audio_data)]
+    return np.mean(np.abs((noisy.audio_data - signal.audio_data) / (signal.audio_data+1e-12))) * 100
 
 class FramedAudio:
 
