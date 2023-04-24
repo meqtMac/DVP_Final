@@ -1,14 +1,14 @@
 # Digital Voice Processing Final Project
 
 # 实验原理
-大部分单通道降噪算法都基于加性噪声模型。即假设采集到的语音信号为$y(t)$,其中纯净语音和噪声分别为$x(t)$ 和$n(t)$ ,
+大部分单通道降噪算法都基于加性噪声模型。即假设采集到的语音信号为 $y(t)$,其中纯净语音和噪声分别为 $x(t)$ 和 $n(t)$ ,
 则它们之间满足:
 $$y(t)=x(t)+n(t)$$
 
 其频域的等效表示为
 $$Y(\omega)=|Y(\omega)| e^{j\Phi_{y}} (\omega)=X(\omega)+N(\omega)$$
 
-那么, 降噪问题就是在只知道$Y( \omega )$ 的前提下，结合语音信号的特点去恢复$X(  \omega  )$ 。
+那么, 降噪问题就是在只知道 $Y( \omega )$ 的前提下，结合语音信号的特点去恢复 $X(  \omega  )$ 。
 我们在实验三使用的谱减法就是最简单的一种降噪方法，其他的传统方法还有维纳(Wiener)滤波法。 或复杂一点基于信号的统计特性建模，包括 有最大似然(MaximumLikelihood, ML) 、贝叶斯(Bayesian)和最大后验(Maximum A Posteriori, MAP) 等几类方法。另外, 传统降噪中还有一类基于子空间的方法, 如使用奇异值分解(Singular Value Decomposition, SVD) 等。
 
 我们这次实验将使用传统方法中最为常用的谱减法、维纳滤波法、基于贝叶斯准则的MMSE法(Minimum Mean Square Error, 最小均方误差)。并对它们进行比较。
@@ -79,24 +79,24 @@ $$
 
 ## 维纳滤波法
 维纳滤波是另一类广泛适用的基础降噪方法。和谱减法的思想不同, 维纳滤波 是线性系统的一个经典概念, 它的出发点是从最小均方误差的角度来推导误差最小 的线性系统。
-最开始在做实验三的时候，我选择了谱减法而不是维纳滤波，因为我觉得维纳滤波涉及到了一个非因果性，需要先知道真实$X(\omega)$才能推导误差最小，而没有实现。
+最开始在做实验三的时候，我选择了谱减法而不是维纳滤波，因为我觉得维纳滤波涉及到了一个非因果性，需要先知道真实 $X(\omega)$才能推导误差最小，而没有实现。
 
-后来这次实验的时候，我才发现了玄妙。这里可以将降噪问题看作一个线性系统, 系统的输入是带噪信号 $Y(\omega)$, 输出是 $Y(\omega) H(\omega)$, 而我们期望的目标是使系统的输出与 $X(\omega)$ 的误差最小。维纳 滤波法有时域和频域推导两种方式。由于语音降噪大多数在频域进行, 因此这里我 们只关心频域方式的推导。设系统的输出为
+后来这次实验的时候，我才发现了玄妙。这里可以将降噪问题看作一个线性系统, 系统的输入是带噪信号  $Y(\omega)$, 输出是  $Y(\omega) H(\omega)$, 而我们期望的目标是使系统的输出与  $X(\omega)$ 的误差最小。维纳 滤波法有时域和频域推导两种方式。由于语音降噪大多数在频域进行, 因此这里我 们只关心频域方式的推导。设系统的输出为
 $$\hat{X}(\omega)=Y(\omega) H(\omega)
 $$
 维纳滤波法的目标是使如下均方误差最小:
 $$E[|e(  \omega  )  |^ {2}  ]=E\{[X(  \omega  )-Y(  \omega  )H(  \omega  )][X(  \omega  )-Y(  \omega  )H(  \omega  )]^*\}
 $$
-这是一个优化问题, 最优的$H(  \omega  )$ 为
+这是一个优化问题, 最优的 $H(  \omega  )$ 为
 $$H(  \omega  )=arg  \min  E[|e(  \omega  )  |^ {2} ]
 $$
-将以上的均方误差对$H(  \omega  )$求偏导数:
+将以上的均方误差对 $H(  \omega  )$求偏导数:
 $$\frac {\partial E[|e(\omega )|^ {2}]}{\partial H(\omega )}  =H(  \omega  )^* E[|  Y   (\omega )|^ {2}]-E[Y(  \omega  )X(  \omega  )^*]
 $$
 对以上偏导数求极值得到:
 $$H(  \omega  )=  \frac {E[X(\omega )Y(\omega )^*]}{E[|Y(\omega )|^ {2}]}  =  \frac {P_ {xy}}{P_ {yy}}  
 $$
-其中,  $P_ {xy}$  是干净语音和带噪语音的互功率谱,  $P_ {yy}$  是带噪语音的功率谱。若假设语音和噪声不相关,即$E[X(  \omega  )N(  \omega  )^*]=0$,则
+其中,   $P_ {xy}$  是干净语音和带噪语音的互功率谱,   $P_ {yy}$  是带噪语音的功率谱。若假设语音和噪声不相关,即 $E[X(  \omega  )N(  \omega  )^*]=0$,则
 $$H(  \omega  )=  \frac  {E[X(  \omega  )Y(  \omega  )^*]}{E[|Y  (\omega )|^ {2}  ]}=  \frac  {E[X(  \omega  ) X(  \omega  )^*+X(  \omega  )N(  \omega  )^*]}{E[|Y  (\omega )|^ {2}  ]}|
     =  \frac  {E[|X  (\omega )^ {2} ] }{E[|Y  (\omega )|^ {2}  ]}|=  \frac {P_ {xx}}{P_ {yy}} 
 $$
@@ -109,20 +109,20 @@ $$
 因此可得:
 $$H(  \omega  )=  \frac {P_ {xx}}{P_ {yy}}  =1-  \frac {P_ {dd}}{P_ {yy}}  
 $$
-在实际应用中，通常可用$|\hat{N}(\omega)|^{2}$作为$P_{dd}$的估计，用$|Y(\omega)|^{2}$作为$P_{yy}$的估计。我们可以发现，维纳滤波法与幅度谱减法有相同的实现形式。
+在实际应用中，通常可用$|\hat{N}(\omega)|^{2}$作为 $P_{dd}$的估计，用$|Y(\omega)|^{2}$作为 $P_{yy}$的估计。我们可以发现，维纳滤波法与幅度谱减法有相同的实现形式。
 
 ## 改进的维纳滤波
 考虑到非因果性，我进行了探究，发现还有维纳滤波的改进方法。利用迭代思想去近似求解维纳滤波的非因果解，是用因果系统去实现非因果维纳滤波的一种方式。其基本思想为：先用带噪语音去初始化增强语音，然后计算得到增益函数，并利用对带噪语音进行滤波，得到新的增强信号，随后重复计算增益函数，再对带噪语音进行滤波，得到新的增强语音，如此迭代数次后的增益函数值即为所求。
 迭代维纳滤波器假设声道系统在域具有如下全极点形式:
 $$V(z)=\frac{g}{A(z)}=\frac{g}{1-\sum_{k=1}^p a_k z^{-k}}
 $$
-其中， $g$ 为系统增益； $\left\{a_k\right\}$ 为全极点系数； $p$ 为全极点个数。在时域，语音信号 $\{x(n)\}$ 通过下面的 差分方程得到:
+其中，  $g$ 为系统增益； $\left\{a_k\right\}$ 为全极点系数；  $p$ 为全极点个数。在时域，语音信号 $\{x(n)\}$ 通过下面的 差分方程得到:
 $$x(n)=\sum_{k=1}^p a_k x(n-k)+g \cdot w(n), \quad n=0,1, \ldots, N-1
 $$
-其中 $w(n)$ 为系统的输入激励。假设 $w(n)$ 为具有零均值和单位方差的高斯白噪声，可以将上式精简 为:
+其中  $w(n)$ 为系统的输入激励。假设  $w(n)$ 为具有零均值和单位方差的高斯白噪声，可以将上式精简 为:
 $$x(n)=\mathbf{a}^T \mathbf{x}_p+g \cdot w(n)
 $$
-其中 $a^T=\left[a_1, a_2, \ldots, a_p\right] $，$ x_p^T=[x(n-1), x(n-2), \ldots, x(n-p)]$ 。
+其中  $a^T=\left[a_1, a_2, \ldots, a_p\right] $，$ x_p^T=[x(n-1), x(n-2), \ldots, x(n-p)]$ 。
 则:
 $$\begin{aligned}
     y(n) & =x(n)+d(n) \\
@@ -131,18 +131,18 @@ $$\begin{aligned}
 $$
 
 在确定了模型假设后，开始估计模型参数。
-使用最大后验MAP (maximum a posteriori) 去估计参数，在观测到带噪语音信号条件下，对得 到参数a的概率 $p(a \mid y)$ 最大化。具体过程比较复杂参考，可以得到$g^2$如下:
+使用最大后验MAP (maximum a posteriori) 去估计参数，在观测到带噪语音信号条件下，对得 到参数a的概率  $p(a \mid y)$ 最大化。具体过程比较复杂参考，可以得到 $g^2$如下:
 $$g^2=\frac{\frac{2 \pi}{N} \sum_{n=0}^{N-1} y^2(n)-2 \pi \sigma_d^2}{\int_{-\pi}^\pi \frac{1}{\left|1-\sum_{k=1}^p a_k e^{-j k \omega}\right|^2} d \omega}
 $$
 因此迭代维纳滤波器算法实践步骤如下:
 
-- 首先使用带噪信号初始化信号的初始值，即设 $x_0=y$ ，设置迭代次数 $\mathrm{i}=0,1,2 \ldots$ 执行以下步骤
--  在第$i$次迭代中对于给定的估计信号 $x_i$ ，利用线性预测技术计算全极点系数 $a_i$ 。
-- 根据上式计算增益项 $g^2$ 。
--  计算 $x_i$ 的短时功率谱:
+- 首先使用带噪信号初始化信号的初始值，即设  $x_0=y$ ，设置迭代次数 $\mathrm{i}=0,1,2 \ldots$ 执行以下步骤
+-  在第 $i$次迭代中对于给定的估计信号  $x_i$ ，利用线性预测技术计算全极点系数  $a_i$ 。
+- 根据上式计算增益项  $g^2$ 。
+-  计算  $x_i$ 的短时功率谱:
 $$P_{x_i x_i}(\omega)=\frac{g^2}{\left|1-\sum_{k=1}^p a_i(k) e^{-j k \omega}\right|^2}
 $$
-其中 $a_i(k)$ 是步骤一估计出的系数。
+其中  $a_i(k)$ 是步骤一估计出的系数。
 - 计算维纳滤波器
 $$H_i(\omega)=\frac{P_{x_i x_i}(\omega)}{P_{x_i x_i}(\omega)+\sigma_d^2}
 $$
@@ -150,7 +150,7 @@ $$
 - 估计增强后的信号谱:
 $$X_{i+1}(\omega)=H_i(\omega) Y(\omega)
 $$
-- 回到步骤2，使用步骤6估计到的 $X_{i+1}(w)$ 作为估计信号。重复上述步骤，直到迭代结 束。
+- 回到步骤2，使用步骤6估计到的  $X_{i+1}(w)$ 作为估计信号。重复上述步骤，直到迭代结 束。
 迭代结束。
 
 
@@ -158,54 +158,54 @@ $$
 但是就理论来说，语音增强领域的迭代维纳滤波器有一大缺陷：迭代何时结束？目前研究还不清楚用什么收敛条件，不知道何时收敛。因为实验方面这个方法效果似乎并不理想，且实现起来较为困难，因此我们只研究了实验原理，并没有实现。
 
 ## 基于贝叶斯准则的MMSE
-贝叶斯方法使用先验知识，理论效果比最大似然方法好。最大后验方法寻找的是后验概率分布最大后验方法寻找的是后验概率分布 $p(X(\omega) \mid Y(\omega))$的最大值。对一个单峰且对称的分布而言 (如高斯分布)，最大后验和贝叶斯方法是等价的。然而在某些场景中，如果信号的分布难以做出假设，使用最大后验方法往往比使用贝叶斯方法要简单一些，因为一个末知分布的最大值通常要比其均值更容易获取。
+贝叶斯方法使用先验知识，理论效果比最大似然方法好。最大后验方法寻找的是后验概率分布最大后验方法寻找的是后验概率分布  $p(X(\omega) \mid Y(\omega))$的最大值。对一个单峰且对称的分布而言 (如高斯分布)，最大后验和贝叶斯方法是等价的。然而在某些场景中，如果信号的分布难以做出假设，使用最大后验方法往往比使用贝叶斯方法要简单一些，因为一个末知分布的最大值通常要比其均值更容易获取。
 我们这里使用了先验知识即采用贝叶斯准则。
 ### 贝叶斯准则下的 MMSE 和维纳滤波的区别
 
-- 维纳滤波法有线性假设, 即认为干净语音和带噪语音之间存在线性关系: $X(\omega)=Y(\omega) H(\omega)$ 。而贝叶斯降噪没有这一假设, 完全通过统计特性来求解干净语 音的最优估计 $\hat{X}(\omega)$, 但是这里需要对语音信号的概率分布做出另外的假设。
-- 维纳滤波法寻找的是复数谱意义上的最优解，即最优的 $X(\omega)$ 。下面我们 寻找幅度谱上的最优解, 即最优的 $|X(\omega)|$ 。
+- 维纳滤波法有线性假设, 即认为干净语音和带噪语音之间存在线性关系:  $X(\omega)=Y(\omega) H(\omega)$ 。而贝叶斯降噪没有这一假设, 完全通过统计特性来求解干净语 音的最优估计 $\hat{X}(\omega)$, 但是这里需要对语音信号的概率分布做出另外的假设。
+- 维纳滤波法寻找的是复数谱意义上的最优解，即最优的  $X(\omega)$ 。下面我们 寻找幅度谱上的最优解, 即最优的 $|X(\omega)|$ 。
 
 ### MMSE
 定义基于幅度谱的 MMSE 优化目标:
 $$e=E[\left(\hat{X}_k-X_k\right)^2]
 $$
-为了表述简洁, 这里令 $\hat{X}_k=\left|\hat{X}\left(\omega_k\right)\right|$, 即估计的干净语音在第 $k$ 个频点上的幅度。
-MMSE 估计器的目标是使每个频点的幅度与真实幅度之间的平方误差的数学期望最小。另外, 令 $\boldsymbol{Y}=[Y\left(\omega_1\right), Y\left(\omega_2\right), \cdots, Y\left(\omega_N\right)]$, 表示带噪信号在所有频点上的频谱, 那么在贝叶斯 MSE 准则下, 该数学期望需要通过 $X_k$ 与 $\boldsymbol{Y}$ 之间的联合概率密度函数 $p\left(X_k, \boldsymbol{Y}\right)$ 来求解, 即
+为了表述简洁, 这里令 $\hat{X}_k=\left|\hat{X}\left(\omega_k\right)\right|$, 即估计的干净语音在第  $k$ 个频点上的幅度。
+MMSE 估计器的目标是使每个频点的幅度与真实幅度之间的平方误差的数学期望最小。另外, 令 $\boldsymbol{Y}=[Y\left(\omega_1\right), Y\left(\omega_2\right), \cdots, Y\left(\omega_N\right)]$, 表示带噪信号在所有频点上的频谱, 那么在贝叶斯 MSE 准则下, 该数学期望需要通过  $X_k$ 与 $\boldsymbol{Y}$ 之间的联合概率密度函数  $p\left(X_k, \boldsymbol{Y}\right)$ 来求解, 即
 $$e=\iint\left(\hat{X}_k-X_k\right)^2 p\left(X_k, \boldsymbol{Y}\right) \mathrm{d} \boldsymbol{Y} \mathrm{d} X_k
 $$
 使上式最优的 $\hat{X}_k$ 为
 $$\hat{X}_k=\int x_k p\left(x_k \mid \boldsymbol{Y}\right) \mathrm{d} x_k=E[X_k \mid \boldsymbol{Y}]
 $$
 
-也就是说最优解就是 $X_k$ 在条件 $\boldsymbol{Y}$ 下的后验数学期望, 或者说是后验概率密度函 数 $p\left(x_k \mid \boldsymbol{Y}\right)$ 在全体 $x_k$ 上的均值。
+也就是说最优解就是  $X_k$ 在条件 $\boldsymbol{Y}$ 下的后验数学期望, 或者说是后验概率密度函 数  $p\left(x_k \mid \boldsymbol{Y}\right)$ 在全体  $x_k$ 上的均值。
 为了求解这个问题, 需要做出两点假设: (1)假设语音信号的频谱（实部和虚部）分别都满足均值为0的高斯分布；(2)假设语音信号的频谱在各个频点之间不相关。
 这两点假设事实上都是极大简化的, 因为实际的语音信号往往并不满足这两个条件, 但是基于这两个假设得到的降噪方法在试验中被证明是有效的, 故这里先不去过多探讨它们的合理性。基于第二点假设，问题变为
 $$\hat{X}_k=E[X_k \mid Y(\omega)]=\int x_k p\left(x_k \mid Y(\omega)\right) \mathrm{d} x_k=\frac{\int x_k p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}{p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}
 $$
-上面等式的最后一步是由贝叶斯条件概率定律推导得出的。求解该式的关键问题是 $p\left(Y(\omega) \mid x_k\right)$, 也就是在 $x_k$ 条件下 $Y(\omega)$ 的条件概率。根据前述第一点假设, $Y(\omega)$ 可 以被认为是 $X(\omega)$ 和 $N(\omega)$ 两个高斯分布随机变量的和, 那么这个条件概率 $p\left(Y(\omega) \mid x_k\right)$ 依然是满足高斯分布的, 并且其均值是 $X(\omega)$, 而方差是 $N(\omega)$ 的方差,
+上面等式的最后一步是由贝叶斯条件概率定律推导得出的。求解该式的关键问题是  $p\left(Y(\omega) \mid x_k\right)$, 也就是在  $x_k$ 条件下  $Y(\omega)$ 的条件概率。根据前述第一点假设,  $Y(\omega)$ 可 以被认为是  $X(\omega)$ 和  $N(\omega)$ 两个高斯分布随机变量的和, 那么这个条件概率  $p\left(Y(\omega) \mid x_k\right)$ 依然是满足高斯分布的, 并且其均值是  $X(\omega)$, 而方差是  $N(\omega)$ 的方差,
 $$p\left(Y(\omega) \mid x_k\right)=\frac{1}{\pi \lambda_d(k)} \exp \left(-\frac{1}{\lambda_d(k)}|Y(\omega)-X(\omega)|^2\right)
 $$
-其中, $\lambda_d(k)=E[\left|N\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的噪声功率谱的期望。此外, $p\left(x_k\right)$ 也满 足高斯分布, 即
+其中, $\lambda_d(k)=E[\left|N\left(\omega_k\right)\right|^2]$ 为第  $k$ 个频点上的噪声功率谱的期望。此外,  $p\left(x_k\right)$ 也满 足高斯分布, 即
 $$p\left(x_k\right)=\frac{1}{\pi \lambda_x(k)} \exp \left(-\frac{x_k^2}{\lambda_x(k)}\right)
 $$
-其中, $\lambda_x(k)=E[\left|X\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的语音功率谱的期望。将以上两个概 率分布代入前述积分公式, 进行化简后可得贝叶斯 MMSE 估计器的最终计算方法 (过程略):
+其中, $\lambda_x(k)=E[\left|X\left(\omega_k\right)\right|^2]$ 为第  $k$ 个频点上的语音功率谱的期望。将以上两个概 率分布代入前述积分公式, 进行化简后可得贝叶斯 MMSE 估计器的最终计算方法 (过程略):
 $$\hat{X}_k=\sqrt{\lambda(k)} \Gamma(1.5) \Phi\left(-0.5,1 ;-v_k\right)
 $$
 其中， $\Gamma$ 和 $\Phi$ 分别表示伽马 (Gamma) 函数和合流超几何 (Confluent Hypergeometric) 函数, 其定义分别为
-也就是说最优解就是 $X_k$ 在条件 $\boldsymbol{Y}$ 下的后验数学期望, 或者说是后验概率密度函 数 $p\left(x_k \mid \boldsymbol{Y}\right)$ 在全体 $x_k$ 上的均值。
+也就是说最优解就是  $X_k$ 在条件 $\boldsymbol{Y}$ 下的后验数学期望, 或者说是后验概率密度函 数  $p\left(x_k \mid \boldsymbol{Y}\right)$ 在全体  $x_k$ 上的均值。
 为了求解这个问题, 需要做出两点假设: (1)假设语音信号的频谱（实部和虚部）
 这两点假设事实上都是极大简化的, 因为实际的语音信号往往并不满足这两个 条件, 但是基于这两个假设得到的降噪方法在试验中被证明是有效的, 故这里先不 去过多探讨它们的合理性。基于第二点假设，问题变为
 $$\hat{X}_k=E[X_k \mid Y(\omega)]=\int x_k p\left(x_k \mid Y(\omega)\right) \mathrm{d} x_k=\frac{\int x_k p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}{p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}
 $$
 
-上面等式的最后一步是由贝叶斯条件概率定律推导得出的。求解该式的关键问题是 $p\left(Y(\omega) \mid x_k\right)$, 也就是在 $x_k$ 条件下 $Y(\omega)$ 的条件概率。根据前述第一点假设, $Y(\omega)$ 可 以被认为是 $X(\omega)$ 和 $N(\omega)$ 两个高斯分布随机变量的和, 那么这个条件概率 $p\left(Y(\omega) \mid x_k\right)$ 依然是满足高斯分布的, 并且其均值是 $X(\omega)$, 而方差是 $N(\omega)$ 的方差,
+上面等式的最后一步是由贝叶斯条件概率定律推导得出的。求解该式的关键问题是  $p\left(Y(\omega) \mid x_k\right)$, 也就是在  $x_k$ 条件下  $Y(\omega)$ 的条件概率。根据前述第一点假设,  $Y(\omega)$ 可 以被认为是  $X(\omega)$ 和  $N(\omega)$ 两个高斯分布随机变量的和, 那么这个条件概率  $p\left(Y(\omega) \mid x_k\right)$ 依然是满足高斯分布的, 并且其均值是  $X(\omega)$, 而方差是  $N(\omega)$ 的方差,
 $$p\left(Y(\omega) \mid x_k\right)=\frac{1}{\pi \lambda_d(k)} \exp \left(-\frac{1}{\lambda_d(k)}|Y(\omega)-X(\omega)|^2\right)
 $$
-其中, $\lambda_d(k)=E[\left|N\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的噪声功率谱的期望。此外, $p\left(x_k\right)$ 也满 足高斯分布, 即
+其中, $\lambda_d(k)=E[\left|N\left(\omega_k\right)\right|^2]$ 为第  $k$ 个频点上的噪声功率谱的期望。此外,  $p\left(x_k\right)$ 也满 足高斯分布, 即
 在
 $$p\left(x_k\right)=\frac{1}{\pi \lambda_x(k)} \exp \left(-\frac{x_k^2}{\lambda_x(k)}\right)
 $$
-其中, $\lambda_x(k)=E[\left|X\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的语音功率谱的期望。将以上两个概 率分布代入前述积分公式, 进行化简后可得贝叶斯 MMSE 估计器的最终计算方法:
+其中, $\lambda_x(k)=E[\left|X\left(\omega_k\right)\right|^2]$ 为第  $k$ 个频点上的语音功率谱的期望。将以上两个概 率分布代入前述积分公式, 进行化简后可得贝叶斯 MMSE 估计器的最终计算方法:
 $$\hat{X}_k=\sqrt{\lambda(k)} \Gamma(1.5) \Phi\left(-0.5,1 ;-v_k\right)
 $$
 其中， $\Gamma$ 和 $\Phi$ 分别表示伽马 (Gamma) 函数和合流超几何 (Confluent Hypergeometric) 函数, 其定义分别为
@@ -214,7 +214,7 @@ $$\begin{gathered}
     \Phi(a, b ; z)=1+\frac{a}{b} \frac{z}{1 !}+\frac{a(a+1)}{b(b+1)} \frac{z}{2 !}+\frac{a(a+1)(a+2)}{b(b+1)(b+2)} \frac{z}{3 !}+\cdots
     \end{gathered}
 $$
-而 $\lambda_k$ 和 $v_k$ 分别为
+而 $\lambda_k$ 和  $v_k$ 分别为
 $$\begin{gathered}
     \lambda_k=\frac{\lambda_x(k) \lambda_d(k)}{\lambda_x(k)+\lambda_d(k)}=\frac{\lambda_x(k)}{1+\xi_k} \\
     v_k=\frac{\xi_k}{1+\xi_k} \gamma_k
@@ -226,15 +226,15 @@ $$
 而
 $$H_{\text {MWSE }}=\frac{\sqrt{\pi}}{2} \frac{\sqrt{v_k}}{\gamma_k} \exp \left(-\frac{v_k}{2}\right)[\left(1+v_k\right)] I_0\left(\frac{v_k}{2}\right)+v_k I_1\left(\frac{v_k}{2}\right)
 $$
-就是贝叶斯 MMSE 估计器的增益函数, 其中 $I_0(x)$ 和 $I_1(x)$ 分别为零阶和一阶修正贝塞尔函数 (Modified Bessel Function)。其定义由下式给出:
+就是贝叶斯 MMSE 估计器的增益函数, 其中  $I_0(x)$ 和  $I_1(x)$ 分别为零阶和一阶修正贝塞尔函数 (Modified Bessel Function)。其定义由下式给出:
 $$I_v(x)=j^{-v} J_v(j x)=\sum_{m=0}^{\infty} \frac{x^{v+2 m}}{2^{v+2 m} m ! \Gamma(v+m+1)}
 $$
 
 
-其中, $j \hat{\theta}_{x k}$ 为第 $k$ 个频点所估计的相位。对上式使用拉格朗日乘子法进行求解后可 得最优的 $j \hat{\theta}_{x k}$ 为
+其中,  $j \hat{\theta}_{x k}$ 为第  $k$ 个频点所估计的相位。对上式使用拉格朗日乘子法进行求解后可 得最优的  $j \hat{\theta}_{x k}$ 为
 $$j \hat{\theta}_{x k}=j \theta_{y k}
 $$
-其中, $j \theta_{y k}$ 为带噪语音在第 $k$ 个频点上的相位。也就是说, 在前述两个假设下, 最佳相位的贝叶斯 MMSE 估计就是带噪语音的相位。这一结论也为在一般的语音降噪 算法中只处理幅度而直接使用带噪语音相位的做法提供了理论支撑。
+其中,  $j \theta_{y k}$ 为带噪语音在第  $k$ 个频点上的相位。也就是说, 在前述两个假设下, 最佳相位的贝叶斯 MMSE 估计就是带噪语音的相位。这一结论也为在一般的语音降噪 算法中只处理幅度而直接使用带噪语音相位的做法提供了理论支撑。
 
 ### log-MMSE
 使用 MMSE 作为标准的最优化方法, 虽然在数学上完全成立并且也比较容易处 理, 然而如果考虑到人耳的听觉特性, 正如老师上课讲的一样，因为人耳对音量的感知和音频信号的能量之间并非线性, 而是接近对数的关系, 所以 MMSE 准则在主观听感上并不一定是最优解。
@@ -255,7 +255,7 @@ $$
 $$E[\log \left(X_k\right) \mid \boldsymbol{Y}]=\frac{1}{2}\left(\log \lambda_k+\log v_k+\int_{v_k}^{\infty} \mathrm{e}^{-t} \mathrm{~d} t\right)=\frac{1}{2}\left(\log \lambda_k+\log v_k-E i\left(-v_k\right)\right)
 $$
 
-其中, $\lambda_k$ 和 $v_k$ 已在 MMSE 估计器的推导过程定义, 而 $E i(x)$ 为指数积分 Integral。
+其中, $\lambda_k$ 和  $v_k$ 已在 MMSE 估计器的推导过程定义, 而 $E i(x)$ 为指数积分 Integral。
 $$E i(x)=-\int_{-x}^{\infty} \frac{\mathrm{e}^{-t}}{t} \mathrm{~d} t
 $$
 最后, 对 $E[\log \left(X_k\right) \mid \boldsymbol{Y}]$ 求指数可得
@@ -439,7 +439,7 @@ def mmse_sqr_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 ![](Results/spectrogram3.jpg)
 ![](Results/spectrogram4.jpg) 
         ![](Results/spectrogram5.jpg) 
-上面是MMSE的三种方法实现，从上到下依次是MMSE，log-MMSE,sqr-MMSE,可以看到MMSE的噪声很大，这是因为后验信噪比减1来代替先验信噪比，这会带来很大的误差。这个假设是在噪声和语音不相关时成立的。同时$\gamma - 1$估计$\xi$时出现负值，将小于$0$的部分替换为0，导致滤波器不平滑，产生误差，另外，0在滤波器设计中产生奇异值，通过增加一个销量解决。在实际情况中，先验信噪比不可能为负值，而在实验过程中用后验信噪比来估计先验信噪比是不合理的，这说明了噪声估计在整个语音增强流程中的重要性。
+上面是MMSE的三种方法实现，从上到下依次是MMSE，log-MMSE,sqr-MMSE,可以看到MMSE的噪声很大，这是因为后验信噪比减1来代替先验信噪比，这会带来很大的误差。这个假设是在噪声和语音不相关时成立的。同时 $\gamma - 1$估计$\xi$时出现负值，将小于 $0$的部分替换为0，导致滤波器不平滑，产生误差，另外，0在滤波器设计中产生奇异值，通过增加一个销量解决。在实际情况中，先验信噪比不可能为负值，而在实验过程中用后验信噪比来估计先验信噪比是不合理的，这说明了噪声估计在整个语音增强流程中的重要性。
 
 我们对比了不同方法的误差，用信噪比(SNR)，均方误差(MSE)，均方对数误差(MSLE)，平均绝对误差(MAE)四种指标来评估，如图，也可以看出，维纳滤波是整体的最好的，SNR最大，然后log-MMSE是三种MMSE效果中最好的。
 
