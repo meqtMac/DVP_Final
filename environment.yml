@@ -1,7 +1,9 @@
+name: dvp_env
+channels:
+  - conda-forge
 dependencies:
-  - matplotlib=3.5.1
-  - matplotlib-base=3.5.1
-  - python=3.9.6
-  - scipy=1.8.0
-  - numpy==1.23.5
-  - typing-extensions==4.5.0
+  - matplotlib=3.7.1
+  - scipy=1.10.1
+  - python=3.10.9
+  - pip:
+    - numpy==1.23.5

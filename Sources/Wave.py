@@ -16,6 +16,9 @@ class WavFile:
     - get_audio_data() -> np.ndarray: returns the audio data as a np.ndarray.
     - get_sample_rate() -> int: returns the sample rate.
     - save(filename: str = None) -> None: saves the audio data to a new .wav file.
+    - generate_noise(noise_type: str = "white", noise_level: float = 0.1) -> WavFile: generates a noise signal.
+    - add_noise(noise: WavFile, noise_level: float = 0.1) -> None: adds a noise signal to the audio data.
+    - plot(start_time: float = 0.0, end_time: Optional[float] = None, title: Optional[str] = None, xlabel: Optional[str] = "t/s", ylabel: Optional[str] = "magnitude") -> None: plots the audio data.
     """
 
     ## add an init that initizal from a wave date and sample rate
@@ -295,7 +298,6 @@ def mape(noisy: WavFile, signal: WavFile) -> float:
     return np.mean(np.abs((noisy.audio_data - signal.audio_data) / (signal.audio_data+1e-12))) * 100
 
 class FramedAudio:
-
     """
     A class representing a framed audio signal.
 
@@ -311,6 +313,8 @@ class FramedAudio:
     - get_frame(index: int) -> np.ndarray: returns a specific audio frame as a 1D np.ndarray.
     - get_frame_time(index: int) -> float: returns the start time of a specific audio frame in seconds.
     - get_num_frames() -> int: returns the total number of audio frames.
+    - get_specgram() -> np.ndarray: returns the spectrogram of the audio signal as a 2D np.ndarray.
+    - def plot_spectrogram(self, start_time: float = 0.0, end_time: float = None, title: str = "Spectrogram", xlabel: str = "t/s", ylabel: str = "f/Hz",fig: Optional[plt.Figure] = None, ax: plt.Axes = None ) -> None # plot the spectrogram of the framed audio, with x showing the time of frame and y showing the frequency
     """
 
     def __init__(self, audio_data: np.ndarray, sample_rate: int, frame_size: int, hop_size: int) -> None:
@@ -415,7 +419,7 @@ class FramedAudio:
         spec, freq, _, _ = plt.specgram(self.audio_data, 
                                         NFFT=self.frame_size, 
                                         Fs=self.sample_rate, 
-                                        cmap='plasma', 
+                                        cmap='viridis', 
                                         noverlap=self.frame_size - self.hop_size, mode='magnitude'
                                         )
 

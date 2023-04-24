@@ -61,7 +61,7 @@ def wiener_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 
 # mmse
 def mmse_stsa_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
-    vk = ksi 
+    vk = ksi  * gamma / (1 + ksi)
     j0 = sp.jv(0, vk / 2)
     j1 = sp.jv(1, vk / 2)
         
@@ -86,11 +86,6 @@ def mmse_sqr_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 		B = (1 + vk) / gamma
 		gain = np.sqrt(A*B)
 		return gain
-
-def map_joint_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
-	eps = 1e-6
-	gain = (ksi + np.sqrt(ksi^ 2 + 2 * (1.0 + ksi)* ksi/ (gamma + eps))) / 2.0/ (1.0 + ksi)
-	return gain
 
 def process(noisedSource: Wave.FramedAudio, noise: Wave.FramedAudio, filterGenerator: Callable[[np.ndarray, np.ndarray], np.ndarray]) -> np.ndarray:
     """
