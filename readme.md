@@ -1,5 +1,5 @@
 # Digital Voice Processing Final Project
-
+I found some problems with equation preview on github, so I recommend you to read this file on vscode or other markdown editor.
 # 实验原理
 大部分单通道降噪算法都基于加性噪声模型。即假设采集到的语音信号为 $y(t)$,其中纯净语音和噪声分别为 $x(t)$ 和 $n(t)$ ,
 则它们之间满足:
