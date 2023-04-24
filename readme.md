@@ -3,14 +3,10 @@
 # 实验原理
 大部分单通道降噪算法都基于加性噪声模型。即假设采集到的语音信号为$y(t)$,其中纯净语音和噪声分别为$x(t)$ 和$n(t)$ ,
 则它们之间满足:
-$$
-y(t)=x(t)+n(t)
-$$
+$$y(t)=x(t)+n(t)$$
 
 其频域的等效表示为
-$$
-Y(  \omega  )=|Y(  \omega  )  |e^ {j \Phi_{y}} (  \omega  )=X(  \omega  )+N(  \omega  )
-$$
+$$Y(\omega)=|Y(\omega)| e^{j\Phi_{y}} (\omega)=X(\omega)+N(\omega)$$
 
 那么, 降噪问题就是在只知道$Y( \omega )$ 的前提下，结合语音信号的特点去恢复$X(  \omega  )$ 。
 我们在实验三使用的谱减法就是最简单的一种降噪方法，其他的传统方法还有维纳(Wiener)滤波法。 或复杂一点基于信号的统计特性建模，包括 有最大似然(MaximumLikelihood, ML) 、贝叶斯(Bayesian)和最大后验(Maximum A Posteriori, MAP) 等几类方法。另外, 传统降噪中还有一类基于子空间的方法, 如使用奇异值分解(Singular Value Decomposition, SVD) 等。
@@ -20,10 +16,8 @@ $$
 ## 谱减法
 虽然在实验三中已经实现了谱减法，但是把它放到这里一是为了比较的完整性，另外，通过对比，得到公式的一般性，也是有必要的。
 谱减法是在频域对混合信号的频谱和噪声的频谱做减法, 是一种思路很朴素的降噪方法，我们已经在实验三里实现。利用前述的加性噪声模型:
-$$
-	Y( \omega  )=|Y(  \omega  )  |e^ {j \phi_y(\omega ) } =X(  \omega  )+N(  \omega  )=X(  \omega  )+|N( \omega  )  |e^ {j \phi_n(\omega )}
-$$
-其中, $|N( \omega  )|$ 和$\phi_n$, 分别是噪声的幅度谱和相位谱。在实际应用中, 噪声的幅度谱$|N( \omega  )|$ 相对比较容易估计, 而噪声的相位谱$\phi_n$,则比较难估计。如果假设$X(  \omega  )$ ,$Y(\omega)$ 和 $N(\omega)$ 的相位均一致, 则可以得到:
+$$Y( \omega  )=|Y(  \omega  )  |e^ {j \phi_y(\omega ) } =X(  \omega  )+N(  \omega  )=X(  \omega  )+|N( \omega  )  |e^ {j \phi_n(\omega )}$$
+其中, $|N( \omega  )|$ 和 $\phi_n$, 分别是噪声的幅度谱和相位谱。在实际应用中, 噪声的幅度谱 $|N( \omega  )|$ 相对比较容易估计, 而噪声的相位谱 $\phi_n$,则比较难估计。如果假设 $X(  \omega  )$ , $Y(\omega)$ 和 $N(\omega)$ 的相位均一致, 则可以得到:
 $$\hat{X}(\omega)=Y(\omega)-N(\omega) \approx[|Y(\omega)|-|\hat{N}(\omega)|] \mathrm{e}^{j \Phi_{y}(\omega)}$$
 这样, 只需要得到噪声的幅度谱估计 $|\hat{N}(\omega)|$, 便可得到干净语音的频谱并恢复时域 波形。噪声幅度谱的估计方法有很多种。比如, 对于平稳噪声可以结合 VAD, 根据 没有语音的片段的总能量来计算噪声的幅度谱。而对于非平稳噪声, 可以通过结合 语音存在概率的噪声估计算法对噪声能量进行跟踪, 具体将在 3.3.3 节中介绍。在这里, 暂时先假设噪声幅度谱已知。在实际应用中, 由于语音和噪声的相位谱存在差异, 谱减法估计的语音幅度谱 $|Y(\omega)|-|\hat{N}(\omega)|$ 可能小于 0 , 因此需要一些修改。
 $$\hat{X}(\omega)=\left\{\begin{array}{ll}
@@ -63,19 +57,15 @@ $$\hat{X}(\omega)=Y(\omega)H(\omega)$$
 
 减小音乐噪声的方法是对谱减的负值设置一个下限，而不是将它们设为0。该下限的取值根据相邻帧的最小谱值确定。因为对噪声的估计需要确定无语音段（或低能量段），需要用到后续帧的语音谱，因此不可能满足实时应用。
 谱减法的半波整流 (小于0，置0) 方法，会引入音乐噪声，为了减少音乐噪声，将满足条件的频点不设置为 0 ，而是设置为相邻几帧的最 小值。
-$$
-|\widehat{X_i}(w)|=\left\{ 
+$$|\widehat{X_i}(w)|=\left\{ 
     \begin{array}{lc}
         |Y_i(w)|-|\widehat{N}(w)|, \text { 如果 }|Y_i(w)|-|\widehat{ N}(w)|>\max | \widehat{N}(w) \mid \\
         min _{j=i-1: i+1}|\widehat{X_j}(w)|, \text { 其它 }\\
-    \end{array}
-\right.
-$$
+    \end{array}\right.$$
 
 
 该方法需要末来一帧的数据，不能做到实时更新，为了解决这个问题，Berouti提出来一种不需要末来信息的方法，该方法包括减去噪声 谱的过估计和设定最小值保护，形式如下:
-$$
-|\widehat{X}(w)|=\left\{\begin{array}{l}
+$$|\widehat{X}(w)|=\left\{\begin{array}{l}
 |Y(w)|-\alpha |\widehat{N}(w)|, \text { 如果 }|Y(w)|>(\alpha+\beta) \widehat{N}(w) \mid \\
 \beta|\widehat{N}(w)|, \text { 其它 }
 \end{array}.
@@ -92,61 +82,49 @@ $$
 最开始在做实验三的时候，我选择了谱减法而不是维纳滤波，因为我觉得维纳滤波涉及到了一个非因果性，需要先知道真实$X(\omega)$才能推导误差最小，而没有实现。
 
 后来这次实验的时候，我才发现了玄妙。这里可以将降噪问题看作一个线性系统, 系统的输入是带噪信号 $Y(\omega)$, 输出是 $Y(\omega) H(\omega)$, 而我们期望的目标是使系统的输出与 $X(\omega)$ 的误差最小。维纳 滤波法有时域和频域推导两种方式。由于语音降噪大多数在频域进行, 因此这里我 们只关心频域方式的推导。设系统的输出为
-$$
-    \hat{X}(\omega)=Y(\omega) H(\omega)
+$$\hat{X}(\omega)=Y(\omega) H(\omega)
 $$
 维纳滤波法的目标是使如下均方误差最小:
-$$
-	E[|e(  \omega  )  |^ {2}  ]=E\{[X(  \omega  )-Y(  \omega  )H(  \omega  )][X(  \omega  )-Y(  \omega  )H(  \omega  )]^*\}
+$$E[|e(  \omega  )  |^ {2}  ]=E\{[X(  \omega  )-Y(  \omega  )H(  \omega  )][X(  \omega  )-Y(  \omega  )H(  \omega  )]^*\}
 $$
 这是一个优化问题, 最优的$H(  \omega  )$ 为
-$$
-H(  \omega  )=arg  \min  E[|e(  \omega  )  |^ {2} ]
+$$H(  \omega  )=arg  \min  E[|e(  \omega  )  |^ {2} ]
 $$
 将以上的均方误差对$H(  \omega  )$求偏导数:
-$$
-	\frac {\partial E[|e(\omega )|^ {2}]}{\partial H(\omega )}  =H(  \omega  )^* E[|  Y   (\omega )|^ {2}]-E[Y(  \omega  )X(  \omega  )^*]
+$$\frac {\partial E[|e(\omega )|^ {2}]}{\partial H(\omega )}  =H(  \omega  )^* E[|  Y   (\omega )|^ {2}]-E[Y(  \omega  )X(  \omega  )^*]
 $$
 对以上偏导数求极值得到:
-$$
-    H(  \omega  )=  \frac {E[X(\omega )Y(\omega )^*]}{E[|Y(\omega )|^ {2}]}  =  \frac {P_ {xy}}{P_ {yy}}  
+$$H(  \omega  )=  \frac {E[X(\omega )Y(\omega )^*]}{E[|Y(\omega )|^ {2}]}  =  \frac {P_ {xy}}{P_ {yy}}  
 $$
 其中,  $P_ {xy}$  是干净语音和带噪语音的互功率谱,  $P_ {yy}$  是带噪语音的功率谱。若假设语音和噪声不相关,即$E[X(  \omega  )N(  \omega  )^*]=0$,则
-$$
-    H(  \omega  )=  \frac  {E[X(  \omega  )Y(  \omega  )^*]}{E[|Y  (\omega )|^ {2}  ]}=  \frac  {E[X(  \omega  ) X(  \omega  )^*+X(  \omega  )N(  \omega  )^*]}{E[|Y  (\omega )|^ {2}  ]}|
+$$H(  \omega  )=  \frac  {E[X(  \omega  )Y(  \omega  )^*]}{E[|Y  (\omega )|^ {2}  ]}=  \frac  {E[X(  \omega  ) X(  \omega  )^*+X(  \omega  )N(  \omega  )^*]}{E[|Y  (\omega )|^ {2}  ]}|
     =  \frac  {E[|X  (\omega )^ {2} ] }{E[|Y  (\omega )|^ {2}  ]}|=  \frac {P_ {xx}}{P_ {yy}} 
 $$
 同样的, 在语音和噪声不相关的假设下:
-$$
-        P_ {yy}  =E[|Y  (\omega )|^ {2}  ]
+$$P_ {yy}  =E[|Y  (\omega )|^ {2}  ]
     =E\{[X(  \omega  )+N(  \omega  )][X(  \omega  )+N(  \omega  )]^*\}
     =E[|X  (\omega )|^ {2}] +E[|N(  \omega  )|^2]
     =  P_ {xx}  +  P_ {dd}  
 $$
 因此可得:
-$$
-    H(  \omega  )=  \frac {P_ {xx}}{P_ {yy}}  =1-  \frac {P_ {dd}}{P_ {yy}}  
+$$H(  \omega  )=  \frac {P_ {xx}}{P_ {yy}}  =1-  \frac {P_ {dd}}{P_ {yy}}  
 $$
 在实际应用中，通常可用$|\hat{N}(\omega)|^{2}$作为$P_{dd}$的估计，用$|Y(\omega)|^{2}$作为$P_{yy}$的估计。我们可以发现，维纳滤波法与幅度谱减法有相同的实现形式。
 
 ## 改进的维纳滤波
 考虑到非因果性，我进行了探究，发现还有维纳滤波的改进方法。利用迭代思想去近似求解维纳滤波的非因果解，是用因果系统去实现非因果维纳滤波的一种方式。其基本思想为：先用带噪语音去初始化增强语音，然后计算得到增益函数，并利用对带噪语音进行滤波，得到新的增强信号，随后重复计算增益函数，再对带噪语音进行滤波，得到新的增强语音，如此迭代数次后的增益函数值即为所求。
 迭代维纳滤波器假设声道系统在域具有如下全极点形式:
-$$
-    V(z)=\frac{g}{A(z)}=\frac{g}{1-\sum_{k=1}^p a_k z^{-k}}
+$$V(z)=\frac{g}{A(z)}=\frac{g}{1-\sum_{k=1}^p a_k z^{-k}}
 $$
 其中， $g$ 为系统增益； $\left\{a_k\right\}$ 为全极点系数； $p$ 为全极点个数。在时域，语音信号 $\{x(n)\}$ 通过下面的 差分方程得到:
-$$
-    x(n)=\sum_{k=1}^p a_k x(n-k)+g \cdot w(n), \quad n=0,1, \ldots, N-1
+$$x(n)=\sum_{k=1}^p a_k x(n-k)+g \cdot w(n), \quad n=0,1, \ldots, N-1
 $$
 其中 $w(n)$ 为系统的输入激励。假设 $w(n)$ 为具有零均值和单位方差的高斯白噪声，可以将上式精简 为:
-$$
-    x(n)=\mathbf{a}^T \mathbf{x}_p+g \cdot w(n)
+$$x(n)=\mathbf{a}^T \mathbf{x}_p+g \cdot w(n)
 $$
 其中 $a^T=\left[a_1, a_2, \ldots, a_p\right] $，$ x_p^T=[x(n-1), x(n-2), \ldots, x(n-p)]$ 。
 则:
-$$
-    \begin{aligned}
+$$\begin{aligned}
     y(n) & =x(n)+d(n) \\
     & =\mathbf{a}^T \mathbf{x}_p+g \cdot w(n)+d(n)
     \end{aligned}
@@ -154,8 +132,7 @@ $$
 
 在确定了模型假设后，开始估计模型参数。
 使用最大后验MAP (maximum a posteriori) 去估计参数，在观测到带噪语音信号条件下，对得 到参数a的概率 $p(a \mid y)$ 最大化。具体过程比较复杂参考，可以得到$g^2$如下:
-$$
-    g^2=\frac{\frac{2 \pi}{N} \sum_{n=0}^{N-1} y^2(n)-2 \pi \sigma_d^2}{\int_{-\pi}^\pi \frac{1}{\left|1-\sum_{k=1}^p a_k e^{-j k \omega}\right|^2} d \omega}
+$$g^2=\frac{\frac{2 \pi}{N} \sum_{n=0}^{N-1} y^2(n)-2 \pi \sigma_d^2}{\int_{-\pi}^\pi \frac{1}{\left|1-\sum_{k=1}^p a_k e^{-j k \omega}\right|^2} d \omega}
 $$
 因此迭代维纳滤波器算法实践步骤如下:
 
@@ -163,18 +140,15 @@ $$
 -  在第$i$次迭代中对于给定的估计信号 $x_i$ ，利用线性预测技术计算全极点系数 $a_i$ 。
 - 根据上式计算增益项 $g^2$ 。
 -  计算 $x_i$ 的短时功率谱:
-$$
-P_{x_i x_i}(\omega)=\frac{g^2}{\left|1-\sum_{k=1}^p a_i(k) e^{-j k \omega}\right|^2}
+$$P_{x_i x_i}(\omega)=\frac{g^2}{\left|1-\sum_{k=1}^p a_i(k) e^{-j k \omega}\right|^2}
 $$
 其中 $a_i(k)$ 是步骤一估计出的系数。
 - 计算维纳滤波器
-$$
-H_i(\omega)=\frac{P_{x_i x_i}(\omega)}{P_{x_i x_i}(\omega)+\sigma_d^2}
+$$H_i(\omega)=\frac{P_{x_i x_i}(\omega)}{P_{x_i x_i}(\omega)+\sigma_d^2}
 $$
 
 - 估计增强后的信号谱:
-$$
-X_{i+1}(\omega)=H_i(\omega) Y(\omega)
+$$X_{i+1}(\omega)=H_i(\omega) Y(\omega)
 $$
 - 回到步骤2，使用步骤6估计到的 $X_{i+1}(w)$ 作为估计信号。重复上述步骤，直到迭代结 束。
 迭代结束。
@@ -193,89 +167,72 @@ $$
 
 ### MMSE
 定义基于幅度谱的 MMSE 优化目标:
-$$
-    e=E[\left(\hat{X}_k-X_k\right)^2]
+$$e=E[\left(\hat{X}_k-X_k\right)^2]
 $$
 为了表述简洁, 这里令 $\hat{X}_k=\left|\hat{X}\left(\omega_k\right)\right|$, 即估计的干净语音在第 $k$ 个频点上的幅度。
 MMSE 估计器的目标是使每个频点的幅度与真实幅度之间的平方误差的数学期望最小。另外, 令 $\boldsymbol{Y}=[Y\left(\omega_1\right), Y\left(\omega_2\right), \cdots, Y\left(\omega_N\right)]$, 表示带噪信号在所有频点上的频谱, 那么在贝叶斯 MSE 准则下, 该数学期望需要通过 $X_k$ 与 $\boldsymbol{Y}$ 之间的联合概率密度函数 $p\left(X_k, \boldsymbol{Y}\right)$ 来求解, 即
-$$
-e=\iint\left(\hat{X}_k-X_k\right)^2 p\left(X_k, \boldsymbol{Y}\right) \mathrm{d} \boldsymbol{Y} \mathrm{d} X_k
+$$e=\iint\left(\hat{X}_k-X_k\right)^2 p\left(X_k, \boldsymbol{Y}\right) \mathrm{d} \boldsymbol{Y} \mathrm{d} X_k
 $$
 使上式最优的 $\hat{X}_k$ 为
-$$
-\hat{X}_k=\int x_k p\left(x_k \mid \boldsymbol{Y}\right) \mathrm{d} x_k=E[X_k \mid \boldsymbol{Y}]
+$$\hat{X}_k=\int x_k p\left(x_k \mid \boldsymbol{Y}\right) \mathrm{d} x_k=E[X_k \mid \boldsymbol{Y}]
 $$
 
 也就是说最优解就是 $X_k$ 在条件 $\boldsymbol{Y}$ 下的后验数学期望, 或者说是后验概率密度函 数 $p\left(x_k \mid \boldsymbol{Y}\right)$ 在全体 $x_k$ 上的均值。
 为了求解这个问题, 需要做出两点假设: (1)假设语音信号的频谱（实部和虚部）分别都满足均值为0的高斯分布；(2)假设语音信号的频谱在各个频点之间不相关。
 这两点假设事实上都是极大简化的, 因为实际的语音信号往往并不满足这两个条件, 但是基于这两个假设得到的降噪方法在试验中被证明是有效的, 故这里先不去过多探讨它们的合理性。基于第二点假设，问题变为
-$$
-    \hat{X}_k=E[X_k \mid Y(\omega)]=\int x_k p\left(x_k \mid Y(\omega)\right) \mathrm{d} x_k=\frac{\int x_k p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}{p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}
+$$\hat{X}_k=E[X_k \mid Y(\omega)]=\int x_k p\left(x_k \mid Y(\omega)\right) \mathrm{d} x_k=\frac{\int x_k p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}{p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}
 $$
 上面等式的最后一步是由贝叶斯条件概率定律推导得出的。求解该式的关键问题是 $p\left(Y(\omega) \mid x_k\right)$, 也就是在 $x_k$ 条件下 $Y(\omega)$ 的条件概率。根据前述第一点假设, $Y(\omega)$ 可 以被认为是 $X(\omega)$ 和 $N(\omega)$ 两个高斯分布随机变量的和, 那么这个条件概率 $p\left(Y(\omega) \mid x_k\right)$ 依然是满足高斯分布的, 并且其均值是 $X(\omega)$, 而方差是 $N(\omega)$ 的方差,
-$$
-    p\left(Y(\omega) \mid x_k\right)=\frac{1}{\pi \lambda_d(k)} \exp \left(-\frac{1}{\lambda_d(k)}|Y(\omega)-X(\omega)|^2\right)
+$$p\left(Y(\omega) \mid x_k\right)=\frac{1}{\pi \lambda_d(k)} \exp \left(-\frac{1}{\lambda_d(k)}|Y(\omega)-X(\omega)|^2\right)
 $$
 其中, $\lambda_d(k)=E[\left|N\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的噪声功率谱的期望。此外, $p\left(x_k\right)$ 也满 足高斯分布, 即
-$$
-    p\left(x_k\right)=\frac{1}{\pi \lambda_x(k)} \exp \left(-\frac{x_k^2}{\lambda_x(k)}\right)
+$$p\left(x_k\right)=\frac{1}{\pi \lambda_x(k)} \exp \left(-\frac{x_k^2}{\lambda_x(k)}\right)
 $$
 其中, $\lambda_x(k)=E[\left|X\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的语音功率谱的期望。将以上两个概 率分布代入前述积分公式, 进行化简后可得贝叶斯 MMSE 估计器的最终计算方法 (过程略):
-$$
-    \hat{X}_k=\sqrt{\lambda(k)} \Gamma(1.5) \Phi\left(-0.5,1 ;-v_k\right)
+$$\hat{X}_k=\sqrt{\lambda(k)} \Gamma(1.5) \Phi\left(-0.5,1 ;-v_k\right)
 $$
 其中， $\Gamma$ 和 $\Phi$ 分别表示伽马 (Gamma) 函数和合流超几何 (Confluent Hypergeometric) 函数, 其定义分别为
 也就是说最优解就是 $X_k$ 在条件 $\boldsymbol{Y}$ 下的后验数学期望, 或者说是后验概率密度函 数 $p\left(x_k \mid \boldsymbol{Y}\right)$ 在全体 $x_k$ 上的均值。
 为了求解这个问题, 需要做出两点假设: (1)假设语音信号的频谱（实部和虚部）
 这两点假设事实上都是极大简化的, 因为实际的语音信号往往并不满足这两个 条件, 但是基于这两个假设得到的降噪方法在试验中被证明是有效的, 故这里先不 去过多探讨它们的合理性。基于第二点假设，问题变为
-$$
-    \hat{X}_k=E[X_k \mid Y(\omega)]=\int x_k p\left(x_k \mid Y(\omega)\right) \mathrm{d} x_k=\frac{\int x_k p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}{p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}
+$$\hat{X}_k=E[X_k \mid Y(\omega)]=\int x_k p\left(x_k \mid Y(\omega)\right) \mathrm{d} x_k=\frac{\int x_k p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}{p\left(Y(\omega) \mid x_k\right) p\left(x_k\right) \mathrm{d} x_k}
 $$
 
 上面等式的最后一步是由贝叶斯条件概率定律推导得出的。求解该式的关键问题是 $p\left(Y(\omega) \mid x_k\right)$, 也就是在 $x_k$ 条件下 $Y(\omega)$ 的条件概率。根据前述第一点假设, $Y(\omega)$ 可 以被认为是 $X(\omega)$ 和 $N(\omega)$ 两个高斯分布随机变量的和, 那么这个条件概率 $p\left(Y(\omega) \mid x_k\right)$ 依然是满足高斯分布的, 并且其均值是 $X(\omega)$, 而方差是 $N(\omega)$ 的方差,
-$$
-    p\left(Y(\omega) \mid x_k\right)=\frac{1}{\pi \lambda_d(k)} \exp \left(-\frac{1}{\lambda_d(k)}|Y(\omega)-X(\omega)|^2\right)
+$$p\left(Y(\omega) \mid x_k\right)=\frac{1}{\pi \lambda_d(k)} \exp \left(-\frac{1}{\lambda_d(k)}|Y(\omega)-X(\omega)|^2\right)
 $$
 其中, $\lambda_d(k)=E[\left|N\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的噪声功率谱的期望。此外, $p\left(x_k\right)$ 也满 足高斯分布, 即
 在
-$$
-    p\left(x_k\right)=\frac{1}{\pi \lambda_x(k)} \exp \left(-\frac{x_k^2}{\lambda_x(k)}\right)
+$$p\left(x_k\right)=\frac{1}{\pi \lambda_x(k)} \exp \left(-\frac{x_k^2}{\lambda_x(k)}\right)
 $$
 其中, $\lambda_x(k)=E[\left|X\left(\omega_k\right)\right|^2]$ 为第 $k$ 个频点上的语音功率谱的期望。将以上两个概 率分布代入前述积分公式, 进行化简后可得贝叶斯 MMSE 估计器的最终计算方法:
-$$
-    \hat{X}_k=\sqrt{\lambda(k)} \Gamma(1.5) \Phi\left(-0.5,1 ;-v_k\right)
+$$\hat{X}_k=\sqrt{\lambda(k)} \Gamma(1.5) \Phi\left(-0.5,1 ;-v_k\right)
 $$
 其中， $\Gamma$ 和 $\Phi$ 分别表示伽马 (Gamma) 函数和合流超几何 (Confluent Hypergeometric) 函数, 其定义分别为
-$$
-    \begin{gathered}
+$$\begin{gathered}
     \Gamma(x)=\int_0^{\infty} t^{x-1} \mathrm{e}^{-t} \mathrm{~d} t \\
     \Phi(a, b ; z)=1+\frac{a}{b} \frac{z}{1 !}+\frac{a(a+1)}{b(b+1)} \frac{z}{2 !}+\frac{a(a+1)(a+2)}{b(b+1)(b+2)} \frac{z}{3 !}+\cdots
     \end{gathered}
 $$
 而 $\lambda_k$ 和 $v_k$ 分别为
-$$
-    \begin{gathered}
+$$\begin{gathered}
     \lambda_k=\frac{\lambda_x(k) \lambda_d(k)}{\lambda_x(k)+\lambda_d(k)}=\frac{\lambda_x(k)}{1+\xi_k} \\
     v_k=\frac{\xi_k}{1+\xi_k} \gamma_k
     \end{gathered}
 $$
 其中, $\xi_k=\xi\left(\omega_k\right)$ 为先验信噪比, $\gamma_k=\gamma\left(\omega_k\right)$ 为后验信噪比。在实际应用中, 先验信噪比较难直接获取, 通常使用当前帧的后验信噪比减去 1 , 然后再与上一帧信噪比估计进行平滑处理, 作为当前帧的先验信噪比估计。 形式:
-$$
-    \hat{X}_k=H_{\mathrm{MMSE}} Y_k
+$$\hat{X}_k=H_{\mathrm{MMSE}} Y_k
 $$
 而
-$$
-    H_{\text {MWSE }}=\frac{\sqrt{\pi}}{2} \frac{\sqrt{v_k}}{\gamma_k} \exp \left(-\frac{v_k}{2}\right)[\left(1+v_k\right)] I_0\left(\frac{v_k}{2}\right)+v_k I_1\left(\frac{v_k}{2}\right)
+$$H_{\text {MWSE }}=\frac{\sqrt{\pi}}{2} \frac{\sqrt{v_k}}{\gamma_k} \exp \left(-\frac{v_k}{2}\right)[\left(1+v_k\right)] I_0\left(\frac{v_k}{2}\right)+v_k I_1\left(\frac{v_k}{2}\right)
 $$
 就是贝叶斯 MMSE 估计器的增益函数, 其中 $I_0(x)$ 和 $I_1(x)$ 分别为零阶和一阶修正贝塞尔函数 (Modified Bessel Function)。其定义由下式给出:
-$$
-    I_v(x)=j^{-v} J_v(j x)=\sum_{m=0}^{\infty} \frac{x^{v+2 m}}{2^{v+2 m} m ! \Gamma(v+m+1)}
+$$I_v(x)=j^{-v} J_v(j x)=\sum_{m=0}^{\infty} \frac{x^{v+2 m}}{2^{v+2 m} m ! \Gamma(v+m+1)}
 $$
 
 
 其中, $j \hat{\theta}_{x k}$ 为第 $k$ 个频点所估计的相位。对上式使用拉格朗日乘子法进行求解后可 得最优的 $j \hat{\theta}_{x k}$ 为
-$$
-    j \hat{\theta}_{x k}=j \theta_{y k}
+$$j \hat{\theta}_{x k}=j \theta_{y k}
 $$
 其中, $j \theta_{y k}$ 为带噪语音在第 $k$ 个频点上的相位。也就是说, 在前述两个假设下, 最佳相位的贝叶斯 MMSE 估计就是带噪语音的相位。这一结论也为在一般的语音降噪 算法中只处理幅度而直接使用带噪语音相位的做法提供了理论支撑。
 
@@ -285,34 +242,27 @@ $$
 
 语音信号的动态范围相当宽, 高能量和低能量之间往往有数量级的差异。这种 差异会使得低能量段产生的误差对整体误差的贡献非常低, 几乎可以被忽略, 然而 低能量段中的这些很小的误差却可以被人耳感知到。针对这个问题, 需要提出一种 更符合人耳听觉特性的准则函数, 使数学计算和主观听感匹配起来。一个比较典型 和常用的准则函数是对数 MMSE (log-MMSE)。它通过将信号的幅度谱变换到对数 域, 压缩了其动态范围, 使得低能量段和高能量段对整体误差的贡献更为均衡。 log-MMSE 的误差函数定义如下:
 
-$$
-    e=E\left\{[\log \left(\hat{X}_k\right)-\log \left(X_k\right)]^2\right\}
+$$e=E\left\{[\log \left(\hat{X}_k\right)-\log \left(X_k\right)]^2\right\}
 $$
 我们可以从另一个角度来看这个定义。因为
-$$
-    \log \left(\hat{X}_k\right)-\log \left(X_k\right)=\log \left(\frac{\hat{X}_k}{X_k}\right)
+$$\log \left(\hat{X}_k\right)-\log \left(X_k\right)=\log \left(\frac{\hat{X}_k}{X_k}\right)
 $$
 所以优化误差函数事实上是在优化估计的语音幅度谱与真实的语音幅度谱之间的比 值, 并且其目标是达到 1 , 这样得到的误差函数为 0 。
 采用与 MMSE 估计器同样的思路, log-MMSE 估计器的最优解为
-$$
-    \hat{X}_k=\exp \left(E[\log \left(X_k\right) Y]\right)
+$$\hat{X}_k=\exp \left(E[\log \left(X_k\right) Y]\right)
 $$
 使用与 MMSE 估计器相同的假设与类似的求解思路, 可以得到以下闭式解 (过程略)
-$$
-    E[\log \left(X_k\right) \mid \boldsymbol{Y}]=\frac{1}{2}\left(\log \lambda_k+\log v_k+\int_{v_k}^{\infty} \mathrm{e}^{-t} \mathrm{~d} t\right)=\frac{1}{2}\left(\log \lambda_k+\log v_k-E i\left(-v_k\right)\right)
+$$E[\log \left(X_k\right) \mid \boldsymbol{Y}]=\frac{1}{2}\left(\log \lambda_k+\log v_k+\int_{v_k}^{\infty} \mathrm{e}^{-t} \mathrm{~d} t\right)=\frac{1}{2}\left(\log \lambda_k+\log v_k-E i\left(-v_k\right)\right)
 $$
 
 其中, $\lambda_k$ 和 $v_k$ 已在 MMSE 估计器的推导过程定义, 而 $E i(x)$ 为指数积分 Integral。
-$$
-    E i(x)=-\int_{-x}^{\infty} \frac{\mathrm{e}^{-t}}{t} \mathrm{~d} t
+$$E i(x)=-\int_{-x}^{\infty} \frac{\mathrm{e}^{-t}}{t} \mathrm{~d} t
 $$
 最后, 对 $E[\log \left(X_k\right) \mid \boldsymbol{Y}]$ 求指数可得
-$$
-    \hat{X}_k=\exp \left(E[\log \left(X_k\right) \mid \boldsymbol{Y}]\right)=\frac{\xi_k}{\xi_k+1} \exp \frac{-E i\left(-v_k\right)}{2} Y_k=H_{\log -MMSE} Y_k
+$$\hat{X}_k=\exp \left(E[\log \left(X_k\right) \mid \boldsymbol{Y}]\right)=\frac{\xi_k}{\xi_k+1} \exp \frac{-E i\left(-v_k\right)}{2} Y_k=H_{\log -MMSE} Y_k
 $$
 其中
-$$
-    H_{\log -\mathrm{MMSE}}=\frac{\xi_k}{\xi_k+1} \exp \frac{-E i\left(-v_k\right)}{2}
+$$H_{\log -\mathrm{MMSE}}=\frac{\xi_k}{\xi_k+1} \exp \frac{-E i\left(-v_k\right)}{2}
 $$
 这就是 log-MMSE 估计器的增益函数。
 
@@ -321,12 +271,10 @@ $$
 
 ### Square-MMSE
 前两种MMSE的方法计算都较为复杂，另一种square-MMSE的方法是为了计算简单，考虑估计纯净信号和真实纯净信号的，功率差的平方，以此作为目标进行优化。误差如下。
-$$
-    e=E\left[\left(\hat{X}^2_k-X_k^2\right)^2\right]
+$$e=E\left[\left(\hat{X}^2_k-X_k^2\right)^2\right]
 $$
 同理可得：
-$$
-    H_k = \sqrt{\frac{\xi_k}{1+\xi_k}(\frac{1+v_k}{\gamma_k})}
+$$H_k = \sqrt{\frac{\xi_k}{1+\xi_k}(\frac{1+v_k}{\gamma_k})}
 $$
 这就是 Square-MMSE 估计器的增益函数。它的优势在于计算简单。
 
@@ -404,8 +352,7 @@ class FramedAudio:
 
 ## 滤波器的代码实现
 ### 谱减法滤波器的实现
-$$
-    H_k = \sqrt{\frac{\xi_k}{1+\xi_k}(\frac{1+v_k}{\gamma_k})}
+$$H_k = \sqrt{\frac{\xi_k}{1+\xi_k}(\frac{1+v_k}{\gamma_k})}
 $$
 ``` python
 def spec_sub_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
@@ -414,8 +361,7 @@ def spec_sub_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 ```
 
 ### 维纳滤波器的实现
-$$
-H_{\text{wiener}}(\omega_k)=\frac{1-\gamma_k}{\gamma_k}
+$$H_{\text{wiener}}(\omega_k)=\frac{1-\gamma_k}{\gamma_k}
 $$
 ``` python
 def wiener_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
@@ -424,8 +370,7 @@ def wiener_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 ```
 
 ### MMSE滤波器的实现
-$$
-    H_{\text {MWSE }}=\frac{\sqrt{\pi}}{2} \frac{\sqrt{v_k}}{\gamma_k} \exp \left(-\frac{v_k}{2}\right)\left[\left(1+v_k\right)\right] I_0\left(\frac{v_k}{2}\right)+v_k I_1\left(\frac{v_k}{2}\right)
+$$H_{\text {MWSE }}=\frac{\sqrt{\pi}}{2} \frac{\sqrt{v_k}}{\gamma_k} \exp \left(-\frac{v_k}{2}\right)\left[\left(1+v_k\right)\right] I_0\left(\frac{v_k}{2}\right)+v_k I_1\left(\frac{v_k}{2}\right)
 $$
 ``` python
 # mmse
@@ -442,8 +387,7 @@ def mmse_stsa_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 ```
 
 ### log-MMSE滤波器的实现
-$$
-    H_{\text{log-MMSE}}(\omega_k)=\frac{\xi_k}{\xi_k+1} \exp \frac{1}{2}
+$$H_{\text{log-MMSE}}(\omega_k)=\frac{\xi_k}{\xi_k+1} \exp \frac{1}{2}
     \int^\infty_{v_k} \frac{e^{-t}}{t}dt
 $$
 ``` python
@@ -457,8 +401,7 @@ def logmmse_gain(gamma: np.ndarray, ksi: np.ndarray) -> np.ndarray:
 ```
 
 ### sqr-MMSE滤波器的实现
-$$
-    H_{\text{sqr-MMSE} }(\omega_k) = \sqrt{\frac{\xi_k}{1+\xi_k}(\frac{1+v_k}{\gamma_k})}
+$$H_{\text{sqr-MMSE} }(\omega_k) = \sqrt{\frac{\xi_k}{1+\xi_k}(\frac{1+v_k}{\gamma_k})}
 $$
 ``` python
 # mmse sqr
